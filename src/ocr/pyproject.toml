@@ -1,0 +1,11 @@
+[project]
+name = "rag-project-ocr"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "pypdfium2>=4.30",
+    "transformers>=5.4",
+    "accelerate>=1.0",
+    "pillow>=10.0",
+    "torch>=2.10",
+]
