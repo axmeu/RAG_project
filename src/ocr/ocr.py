@@ -3,15 +3,13 @@ from pathlib import Path
 
 import torch
 import pypdfium2 as pdfium
-from transformers import (
-    LightOnOcrForConditionalGeneration,
-    LightOnOcrProcessor,
-)
+from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
+
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
-MODEL = "lightonai/LightOnOCR-2-1B"
-PDF_PATH = str(ROOT / "data" / "Core Rules.pdf")
+MODEL = "lightonai/LightOnOCR-3-0.8B"
+PDF_PATH = str(ROOT / "data" / "raw" / "Core Rules.pdf")
 OUTPUT_DIR = str(ROOT / "data" / "ocr")
 
 
@@ -22,12 +20,12 @@ def process_pdf(
 ):
     os.makedirs(output_dir, exist_ok=True)
 
-    model = LightOnOcrForConditionalGeneration.from_pretrained(
+    model = Qwen3_5ForConditionalGeneration.from_pretrained(
         MODEL,
         torch_dtype=torch.bfloat16,
     ).to("cuda")
 
-    processor = LightOnOcrProcessor.from_pretrained(MODEL)
+    processor = AutoProcessor.from_pretrained(MODEL)
 
     pdf = pdfium.PdfDocument(pdf_path)
     total_pages = len(pdf)

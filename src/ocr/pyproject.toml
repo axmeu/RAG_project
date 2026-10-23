@@ -8,4 +8,5 @@ dependencies = [
     "accelerate>=1.0",
     "pillow>=10.0",
     "torch>=2.10",
+    "torchvision>=0.29.1",
 ]

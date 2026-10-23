@@ -13,6 +13,8 @@ Games of Warhammer 40,000 are won by scoring more Victory points than your oppon
 
 The game is played in a series of battle rounds, broken into different phases during which players move, shoot and fight with their miniatures.
 
+In a game as wide-ranging as Warhammer 40,000, there may be times when you are not sure exactly how to resolve a situation that has come up during play. When this happens, have a quick chat with your opponent and apply the solution that makes the most sense to both of you (or seems the most fun!). If no single solution presents itself, you and your opponent should roll off, and whoever rolls highest gets to choose what happens. Then you can get on with the fighting!
+
 <table>
   <tr>
     <td>1</td>
@@ -22,17 +24,17 @@ The game is played in a series of battle rounds, broken into different phases du
   <tr>
     <td>2</td>
     <td>MOVEMENT PHASE</td>
-    <td>🚶</td>
+    <td>⬆️</td>
   </tr>
   <tr>
     <td>3</td>
     <td>SHOOTING PHASE</td>
-    <td>🏹</td>
+    <td>🔫</td>
   </tr>
   <tr>
     <td>4</td>
     <td>CHARGE PHASE</td>
-    <td>⚡</td>
+    <td>⬆️⬆️</td>
   </tr>
   <tr>
     <td>5</td>
@@ -40,5 +42,3 @@ The game is played in a series of battle rounds, broken into different phases du
     <td>⚔️</td>
   </tr>
 </table>
-
-In a game as wide-ranging as Warhammer 40,000, there may be times when you are not sure exactly how to resolve a situation that has come up during play. When this happens, have a quick chat with your opponent and apply the solution that makes the most sense to both of you (or seems the most fun!). If no single solution presents itself, you and your opponent should roll off, and whoever rolls highest gets to choose what happens. Then you can get on with the fighting!
