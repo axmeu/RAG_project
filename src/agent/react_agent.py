@@ -3,17 +3,18 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
-import retrieve
-from tools import build_sql_instructions, execute_sql
 
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
 sys.path.insert(0, str(SRC_DIR / "pipeline"))
 
+import retrieve
+from tools import build_sql_instructions, execute_sql
 from config import AGENT_MAX_ITERATIONS as MAX_ITERATIONS
 from config import GEMINI_MODEL as MODEL_NAME
 from config import RAG_TOP_K
+
 
 load_dotenv()
 
@@ -62,6 +63,23 @@ SQL_QUERY_TOOL = {
 
 TOOLS = [RAG_SEARCH_TOOL, SQL_QUERY_TOOL]
 
+RAG_GUIDANCE = (
+    "When calling rag_search:\n"
+    "- Never pass the user's question verbatim. First reason about what is "
+    "actually being asked in terms of Warhammer 40k game mechanics: a "
+    "situation described in plain, colloquial language can involve one or "
+    "several distinct rules systems (phases, actions, keywords, unit "
+    "stats) that are not named explicitly in the question. Work out every "
+    "distinct mechanic that could be relevant before searching, based on "
+    "your own knowledge of how the game works, not on a fixed list.\n"
+    "- For each mechanic you identify, issue a separate rag_search query, "
+    "phrased using the official Warhammer 40k rules terminology for that "
+    "mechanic, not the user's own wording.\n"
+    "- If the results do not clearly answer the question, reconsider "
+    "whether a relevant mechanic was missed, reformulate, and search again "
+    "before answering from memory or giving up.\n"
+)
+
 SYSTEM_INSTRUCTION = (
     "You are an assistant answering questions about Warhammer 40k. You have "
     "two tools: rag_search for rules and mechanics, sql_query for unit "
@@ -70,6 +88,7 @@ SYSTEM_INSTRUCTION = (
     "Cite page numbers when you use rag_search results. Do not answer from "
     "memory; only use what the tools return. If the tools do not contain "
     "the answer, say so explicitly.\n\n"
+    f"{RAG_GUIDANCE}\n"
     f"{build_sql_instructions()}"
 )
 
@@ -114,27 +133,26 @@ def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidenc
     )
 
     for _ in range(MAX_ITERATIONS):
-        function_calls = [o for o in interaction.outputs if o.type == "function_call"]
+        function_calls = [s for s in interaction.steps if s.type == "function_call"]
         if not function_calls:
             break
 
         for call in function_calls:
-            arguments = json.loads(call.arguments)
             result = dispatch_tool(
-                call.name, arguments, rag_model, rag_retriever, rag_by_id
+                call.name, call.arguments, rag_model, rag_retriever, rag_by_id
             )
-            evidence.append({"tool": call.name, "arguments": arguments, "result": result})
+            evidence.append({"tool": call.name, "arguments": call.arguments, "result": result})
 
             interaction = client.interactions.create(
                 model=MODEL_NAME,
                 previous_interaction_id=interaction.id,
                 tools=TOOLS,
-                input={
+                input=[{
                     "type": "function_result",
                     "name": call.name,
                     "call_id": call.id,
-                    "result": result,
-                },
+                    "result": json.dumps(result, ensure_ascii=False),
+                }],
             )
 
     return interaction
@@ -167,7 +185,7 @@ def run_agent(client, question):
         interaction = run_tool_loop(
             client, current_question, rag_model, rag_retriever, rag_by_id, evidence
         )
-        final_answer = interaction.outputs[-1].text
+        final_answer = interaction.output_text
 
         verdict = verify_answer(client, question, evidence, final_answer)
         if verdict.get("satisfied", True):
