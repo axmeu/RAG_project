@@ -2,22 +2,21 @@ import json
 import sys
 from pathlib import Path
 from pylate import indexes, models
-from pylate import retrieve
+from pylate import retrieve as pylate_retrieve
 
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-CHUNKS_PATH = ROOT / "data" / "structured" / "chunks.json"
-INDEX_DIR = ROOT / "data" / "index"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-MODEL_NAME = "answerdotai/answerai-colbert-small-v1"
-INDEX_NAME = "core_rules"
-TOP_K = 5
+from config import CHUNKS_PATH, EMBEDDING_MODEL, INDEX_DIR, INDEX_NAME, RAG_TOP_K
+
+MODEL_NAME = EMBEDDING_MODEL
+TOP_K = RAG_TOP_K
 
 
 def load():
     model = models.ColBERT(model_name_or_path=MODEL_NAME)
     index = indexes.PLAID(index_folder=str(INDEX_DIR), index_name=INDEX_NAME)
-    retriever = retrieve.ColBERT(index=index)
+    retriever = pylate_retrieve.ColBERT(index=index)
     chunks = json.loads(CHUNKS_PATH.read_text(encoding="utf-8"))
     by_id = {c["chunk_id"]: c for c in chunks}
     return model, retriever, by_id

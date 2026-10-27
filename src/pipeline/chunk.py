@@ -1,10 +1,12 @@
 import json
 import re
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-SECTIONS_PATH = ROOT / "data" / "structured" / "sections.json"
-OUT_PATH = ROOT / "data" / "structured" / "chunks.json"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from config import CHUNKS_PATH as OUT_PATH
+from config import SECTIONS_PATH
 
 CHARS_PER_TOKEN = 4
 TARGET_TOKENS = 400

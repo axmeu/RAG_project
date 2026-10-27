@@ -1,16 +1,18 @@
 import os
+import sys
 from pathlib import Path
-
 import torch
 import pypdfium2 as pdfium
 from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
+from config import OCR_DIR, OCR_MODEL, PDF_PATH
 
 
 ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(ROOT / "src"))
 
-MODEL = "lightonai/LightOnOCR-3-0.8B"
-PDF_PATH = str(ROOT / "data" / "raw" / "Core Rules.pdf")
-OUTPUT_DIR = str(ROOT / "data" / "ocr")
+MODEL = OCR_MODEL
+PDF_PATH = str(PDF_PATH)
+OUTPUT_DIR = str(OCR_DIR)
 
 
 def process_pdf(
@@ -22,8 +24,9 @@ def process_pdf(
 
     model = Qwen3_5ForConditionalGeneration.from_pretrained(
         MODEL,
-        torch_dtype=torch.bfloat16,
-    ).to("cuda")
+        dtype=torch.bfloat16,
+        device_map="auto",
+    )
 
     processor = AutoProcessor.from_pretrained(MODEL)
 

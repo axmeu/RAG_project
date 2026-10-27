@@ -1,22 +1,23 @@
 import sys
-
+from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
-
 import retrieve
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from config import GEMINI_MODEL, RAG_TOP_K
 
 load_dotenv()
 
-MODEL_NAME = "gemini-3.5-flash-lite"
-TOP_K = 5
+MODEL_NAME = GEMINI_MODEL
+TOP_K = RAG_TOP_K
 
 SYSTEM_INSTRUCTION = (
     "You answer questions about the Warhammer 40k Core Rules using only the "
-    "provided context. Cite the page number(s) you used but reformulate more clearly the content."
-    "Keep the specific terms of the game, do not reformulate them, except if asked clearly."
-    "Give a straight answer and avoid saying that you received a context or SQL informations"
-    "Be natural as if it was your own knowledge. If the context does not contain the answer,"
-    "say that you do not have the answer of the question and invite to reformulate the question."
+    "provided context. If the context does not contain the answer, say so "
+    "explicitly instead of guessing. Cite the page number(s) you used."
 )
 
 

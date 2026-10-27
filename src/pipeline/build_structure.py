@@ -1,12 +1,15 @@
 import json
 import re
+import sys
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-INPUT_DIR = ROOT / "data" / "ocr"
-OUT_DIR = ROOT / "data" / "structured"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from config import OCR_DIR as INPUT_DIR
+from config import STRUCTURED_DIR as OUT_DIR
+
 
 BRAND = "CORE RULES"
 EXTRA_CHAPTERS = []

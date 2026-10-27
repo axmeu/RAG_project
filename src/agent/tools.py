@@ -1,12 +1,14 @@
 import re
 import sqlite3
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-DB_PATH = ROOT / "data" / "raw" / "wahadb.sqlite"
-DICTIONARY_PATH = Path(__file__).resolve().parent / "SQL_AGENT_DATA_DICTIONARY.md"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-MAX_ROWS = 200
+from config import SQL_DB_PATH as DB_PATH
+from config import SQL_DICTIONARY_PATH as DICTIONARY_PATH
+from config import SQL_MAX_ROWS as MAX_ROWS
+
 
 FORBIDDEN_RE = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|REPLACE|ATTACH|PRAGMA|VACUUM)\b",
@@ -18,8 +20,30 @@ def load_sql_dictionary():
     return DICTIONARY_PATH.read_text(encoding="utf-8")
 
 
+SQL_GUIDANCE = (
+    "When writing SQL:\n"
+    "- Use LIKE with wildcards for any name, keyword, or text match, never "
+    "exact equality, since you do not know the exact stored spelling.\n"
+    "- In datasheets_models, the model name often repeats the unit name. Do "
+    "not assume a shorter generic model name exists; prefer joining on "
+    "DatasheetId alone when the unit has a single model line.\n"
+    "- If a query could match multiple rows, do not add extra filters to "
+    "force a single result; return all matches and let the caller "
+    "disambiguate.\n"
+    "- Always include identifying columns (at least the datasheet name) in "
+    "the SELECT.\n"
+    "- Always add a LIMIT clause (20 by default) to avoid excessive rows.\n"
+    "- Select only the columns the question actually needs, plus "
+    "identifying columns. Avoid long text columns (description, legend) "
+    "unless the question is about one specific named item in detail.\n"
+)
+
+
+def build_sql_instructions():
+    return f"{SQL_GUIDANCE}\n{load_sql_dictionary()}"
+
+
 def fix_mojibake(value):
-    # fixing the encoding artefacts
     if not isinstance(value, str):
         return value
     try:
