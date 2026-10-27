@@ -9,12 +9,6 @@ from config import CHUNKS_PATH, EMBEDDING_MODEL, INDEX_DIR, INDEX_NAME
 
 MODEL_NAME = EMBEDDING_MODEL
 
-SANITY_QUERIES = [
-    "What happens when a unit falls back?",
-    "How does the charge phase work?",
-    "What is engagement range?",
-]
-
 
 def embedding_text(chunk):
     return chunk["path_str"] + "\n\n" + chunk["text"]
@@ -46,23 +40,6 @@ def main():
     )
 
     print(f"Indexed {len(chunks)} chunks into {INDEX_DIR} (index={INDEX_NAME})")
-
-    retriever = retrieve.ColBERT(index=index)
-    by_id = {c["chunk_id"]: c for c in chunks}
-
-    for query in SANITY_QUERIES:
-        query_embedding = model.encode(
-            [query],
-            batch_size=1,
-            is_query=True,
-            show_progress_bar=False,
-        )
-        results = retriever.retrieve(queries_embeddings=query_embedding, k=3)[0]
-
-        print(f"\nQuery: {query}")
-        for r in results:
-            c = by_id[r["id"]]
-            print(f"   score={r['score']:.2f} p.{c['page_start']} {c['path_str']}")
 
 
 if __name__ == "__main__":
