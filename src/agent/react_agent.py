@@ -1,9 +1,9 @@
 import json
 import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
 from google import genai
-
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -11,10 +11,10 @@ sys.path.insert(0, str(SRC_DIR / "pipeline"))
 
 import retrieve
 from tools import build_sql_instructions, execute_sql
+
 from config import AGENT_MAX_ITERATIONS as MAX_ITERATIONS
 from config import GEMINI_MODEL as MODEL_NAME
 from config import RAG_TOP_K
-
 
 load_dotenv()
 
@@ -135,27 +135,39 @@ def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidenc
     for _ in range(MAX_ITERATIONS):
         function_calls = [s for s in interaction.steps if s.type == "function_call"]
         if not function_calls:
-            break
+            return interaction
 
+        results_input = []
         for call in function_calls:
             result = dispatch_tool(
                 call.name, call.arguments, rag_model, rag_retriever, rag_by_id
             )
             evidence.append({"tool": call.name, "arguments": call.arguments, "result": result})
+            results_input.append({
+                "type": "function_result",
+                "name": call.name,
+                "call_id": call.id,
+                "result": json.dumps(result, ensure_ascii=False),
+            })
 
-            interaction = client.interactions.create(
-                model=MODEL_NAME,
-                previous_interaction_id=interaction.id,
-                tools=TOOLS,
-                input=[{
-                    "type": "function_result",
-                    "name": call.name,
-                    "call_id": call.id,
-                    "result": json.dumps(result, ensure_ascii=False),
-                }],
-            )
+        interaction = client.interactions.create(
+            model=MODEL_NAME,
+            previous_interaction_id=interaction.id,
+            tools=TOOLS,
+            input=results_input,
+        )
 
-    return interaction
+    # Iterations exhausted but the model still wants to call tools:
+    # force a final, tool-free answer from whatever evidence we already have.
+    return client.interactions.create(
+        model=MODEL_NAME,
+        previous_interaction_id=interaction.id,
+        input=(
+            "You have used all available tool calls for this question. "
+            "Answer now, using only the evidence already gathered above. "
+            "Do not request any more tool calls."
+        ),
+    )
 
 
 def verify_answer(client, question, evidence, answer):
@@ -174,10 +186,8 @@ def verify_answer(client, question, evidence, answer):
         return {"satisfied": True, "missing": ""}
 
 
-def run_agent(client, question):
+def run_agent(client, question, rag_model, rag_retriever, rag_by_id):
     evidence = []
-    rag_model, rag_retriever, rag_by_id = retrieve.load()
-
     current_question = question
     final_answer = None
 
@@ -202,15 +212,40 @@ def run_agent(client, question):
 
 
 def main():
-    question = " ".join(sys.argv[1:]) or input("Question: ")
-    client = genai.Client()
-    answer, evidence = run_agent(client, question)
+    import argparse
 
-    print(f"Question: {question}\n")
-    print(f"Answer:\n{answer}\n")
-    print(f"Tool calls made: {len(evidence)}")
-    for step in evidence:
-        print(f"   {step['tool']}({step['arguments']})")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("question", nargs="*")
+    parser.add_argument("--verbose", action="store_true")
+    args = parser.parse_args()
+
+    client = genai.Client()
+    rag_model, rag_retriever, rag_by_id = retrieve.load()
+
+    def ask(question):
+        answer, evidence = run_agent(
+            client, question, rag_model, rag_retriever, rag_by_id
+        )
+        print(f"\nAnswer:\n{answer}\n")
+        if args.verbose:
+            print(f"Tool calls made: {len(evidence)}")
+            for step in evidence:
+                print(f"   {step['tool']}({step['arguments']})")
+
+    question = " ".join(args.question)
+    if question:
+        ask(question)
+        return
+
+    print("Interactive mode. Type 'quit' to exit.\n")
+    while True:
+        question = input("Question: ").strip()
+        if question.lower() in {"quit", "exit"}:
+            break
+        if not question:
+            continue
+        ask(question)
+        print("\nAnything else I can help with? (type 'quit' to exit)\n")
 
 
 if __name__ == "__main__":
