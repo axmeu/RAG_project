@@ -1,0 +1,82 @@
+[
+  {
+    "question": "What rules determine whether one model can see another on the battlefield?",
+    "relevant_pages": [8]
+  },
+  {
+    "question": "How close do the models in my squad need to stay to each other?",
+    "relevant_pages": [6]
+  },
+  {
+    "question": "What is a Battle-shock test and what happens if a unit fails it?",
+    "relevant_pages": [11]
+  },
+  {
+    "question": "How much extra distance can a unit cover if it decides to rush instead of shoot this turn?",
+    "relevant_pages": [14]
+  },
+  {
+    "question": "What is a Desperate Escape test and when must I take one?",
+    "relevant_pages": [14]
+  },
+  {
+    "question": "What happens to the passengers of a transport vehicle if it's destroyed?",
+    "relevant_pages": [17, 18]
+  },
+  {
+    "question": "Can a model shoot different targets during its turn?",
+    "relevant_pages": [19, 20]
+  },
+  {
+    "question": "What roll do I need to score a hit when making a ranged attack?",
+    "relevant_pages": [21]
+  },
+  {
+    "question": "How do I compare my weapon's Strength to the target's Toughness to see if I've wounded it?",
+    "relevant_pages": [21]
+  },
+  {
+    "question": "Is there a type of saving throw that ignores how armour-piercing an attack is?",
+    "relevant_pages": [22]
+  },
+  {
+    "question": "How does a game normally end, and how do we work out who won?",
+    "relevant_pages": [59, 60]
+  },
+  {
+    "question": "What does the Devastating Wounds ability do when a Critical Wound is scored?",
+    "relevant_pages": [28]
+  },
+  {
+    "question": "How many dice do I roll, and of what kind, to determine how far my unit can charge?",
+    "relevant_pages": [29]
+  },
+  {
+    "question": "Which of my units get to attack before anyone else during combat?",
+    "relevant_pages": [32]
+  },
+  {
+    "question": "After my unit is done attacking in melee, can it move again before the phase ends?",
+    "relevant_pages": [35]
+  },
+  {
+    "question": "What does the Objective Control characteristic on a datasheet represent?",
+    "relevant_pages": [38]
+  },
+  {
+    "question": "How can a unit suddenly appear on the table later in the game instead of starting deployed?",
+    "relevant_pages": [39]
+  },
+  {
+    "question": "How many Command Points does the Command Re-roll Stratagem cost?",
+    "relevant_pages": [41]
+  },
+  {
+    "question": "How does taking shelter behind rubble help my models avoid being hit?",
+    "relevant_pages": [44, 45]
+  },
+  {
+    "question": "How many points can I spend building my army in a Strike Force battle?",
+    "relevant_pages": [55]
+  }
+]

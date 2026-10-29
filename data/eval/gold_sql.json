@@ -1,0 +1,125 @@
+[
+  {
+    "question": "What is the Toughness characteristic of an Intercessor Squad model?",
+    "expected_rows": [
+      {"toughness": "4"}
+    ]
+  },
+  {
+    "question": "What save do Necron Warriors have?",
+    "expected_rows": [
+      {"save": "4+"}
+    ]
+  },
+  {
+    "question": "How many wounds does a Hive Tyrant have?",
+    "expected_rows": [
+      {"wounds": "10"}
+    ]
+  },
+  {
+    "question": "What is the Move characteristic of a T'au Strike Team model?",
+    "expected_rows": [
+      {"movement": "6"}
+    ]
+  },
+  {
+    "question": "What is the Strength of the bolt rifle?",
+    "expected_rows": [
+      {"strength": "4"}
+    ]
+  },
+  {
+    "question": "What is the Armour Penetration of the gauss flayer?",
+    "expected_rows": [
+      {"ap": "0"}
+    ]
+  },
+  {
+    "question": "What Damage does Ghazghkull Thraka's Gork's Klaw deal when he strikes with it?",
+    "expected_rows": [
+      {"damage": "4"}
+    ]
+  },
+  {
+    "question": "How many points does a 5-model Intercessor Squad cost?",
+    "expected_rows": [
+      {"cost": "80"}
+    ]
+  },
+  {
+    "question": "How many points does a 10-model Intercessor Squad cost?",
+    "expected_rows": [
+      {"cost": "150"}
+    ]
+  },
+  {
+    "question": "How many Boyz can be included in a Boyz unit?",
+    "expected_rows": [
+      {"description": "9-19 Boyz"}
+    ]
+  },
+  {
+    "question": "Is the Intercessor Squad a Battleline unit?",
+    "expected_rows": [
+      {"keyword": "Battleline"}
+    ]
+  },
+  {
+    "question": "Which units can Ghazghkull Thraka lead as their attached Leader?",
+    "expected_rows": [
+      {"led_unit": "Boyz"},
+      {"led_unit": "Nobz"},
+      {"led_unit": "Meganobz"},
+      {"led_unit": "Breaka Boyz"}
+    ]
+  },
+  {
+    "question": "How many Command Points does the Armour of Contempt Stratagem cost for a Space Marines army?",
+    "expected_rows": [
+      {"cp_cost": "1"}
+    ]
+  },
+  {
+    "question": "How many points does the Speed of the Primarch Enhancement cost in the Liberator Assault Group detachment?",
+    "expected_rows": [
+      {"cost": "25"}
+    ]
+  },
+  {
+    "question": "How many datasheets does the Tyranids faction have?",
+    "expected_rows": [
+      {"count": "57"}
+    ]
+  },
+  {
+    "question": "How many datasheets does the Space Marines faction have?",
+    "expected_rows": [
+      {"count": "292"}
+    ]
+  },
+  {
+    "question": "Does the Space Marines faction have a detachment called Gladius Task Force?",
+    "expected_rows": [
+      {"detachment_name": "Gladius Task Force"}
+    ]
+  },
+  {
+    "question": "Does the Hive Tyrant have the Synapse ability?",
+    "expected_rows": [
+      {"ability_name": "Synapse"}
+    ]
+  },
+  {
+    "question": "What is Ghazghkull Thraka's invulnerable save?",
+    "expected_rows": [
+      {"invulnerable_save": "4"}
+    ]
+  },
+  {
+    "question": "What is the Leadership characteristic of Necron Warriors?",
+    "expected_rows": [
+      {"leadership": "7+"}
+    ]
+  }
+]

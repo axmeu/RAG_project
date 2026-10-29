@@ -1,0 +1,145 @@
+[
+  {
+    "question": "What is a Battle-shock test and what happens if a unit fails it?",
+    "expected_tools": ["rag_search"],
+    "relevant_pages": [11]
+  },
+  {
+    "question": "How many dice do I roll, and of what kind, to determine how far my unit can charge?",
+    "expected_tools": ["rag_search"],
+    "relevant_pages": [29]
+  },
+  {
+    "question": "What roll do I need to score a hit when making a ranged attack?",
+    "expected_tools": ["rag_search"],
+    "relevant_pages": [21]
+  },
+  {
+    "question": "How does taking shelter behind rubble help my models avoid being hit?",
+    "expected_tools": ["rag_search"],
+    "relevant_pages": [44, 45]
+  },
+  {
+    "question": "What happens to the passengers of a transport vehicle if it's destroyed?",
+    "expected_tools": ["rag_search"],
+    "relevant_pages": [17, 18]
+  },
+  {
+    "question": "What is the Toughness characteristic of an Intercessor Squad model?",
+    "expected_tools": ["sql_query"],
+    "expected_rows": [
+      {"toughness": "4"}
+    ]
+  },
+  {
+    "question": "What save do Necron Warriors have?",
+    "expected_tools": ["sql_query"],
+    "expected_rows": [
+      {"save": "4+"}
+    ]
+  },
+  {
+    "question": "How many points does a 5-model Intercessor Squad cost?",
+    "expected_tools": ["sql_query"],
+    "expected_rows": [
+      {"cost": "80"}
+    ]
+  },
+  {
+    "question": "Which units can Ghazghkull Thraka lead as their attached Leader?",
+    "expected_tools": ["sql_query"],
+    "expected_rows": [
+      {"led_unit": "Boyz"},
+      {"led_unit": "Nobz"},
+      {"led_unit": "Meganobz"},
+      {"led_unit": "Breaka Boyz"}
+    ]
+  },
+  {
+    "question": "How many datasheets does the Space Marines faction have?",
+    "expected_tools": ["sql_query"],
+    "expected_rows": [
+      {"count": "292"}
+    ]
+  },
+  {
+    "question": "My Intercessor Squad's datasheet lists '-' for invulnerable save. Does that mean it has none, and what's the difference between an invulnerable save and a normal armour save?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"invulnerable_save": "-"}
+    ],
+    "relevant_pages": [22]
+  },
+  {
+    "question": "Ghazghkull Thraka has an invulnerable save of 4+. When an attack with a high Armour Penetration wounds him, does that AP reduce his invulnerable save?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"invulnerable_save": "4"}
+    ],
+    "relevant_pages": [22]
+  },
+  {
+    "question": "The bolt rifle has an Armour Penetration of -1. What does that number actually do to the target's saving throw?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"ap": "-1"}
+    ],
+    "relevant_pages": [22]
+  },
+  {
+    "question": "Necron Warriors have an Objective Control of 2. What does that characteristic represent on a datasheet?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"oc": "2"}
+    ],
+    "relevant_pages": [38]
+  },
+  {
+    "question": "A Boyz unit can include up to 19 Boyz plus a Boss Nob. If I declare a charge with this unit, what dice do I roll to see how far it can move?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"description": "9-19 Boyz"}
+    ],
+    "relevant_pages": [29]
+  },
+  {
+    "question": "The Hive Tyrant's datasheet lists a 'Leader' ability. What does that ability let it do before the battle?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"ability_name": "Leader"}
+    ],
+    "relevant_pages": [39]
+  },
+  {
+    "question": "The Armour of Contempt Stratagem costs 1 CP for a Space Marines army. Broadly speaking, what do Stratagems let a player spend Command Points on during a battle?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"cp_cost": "1"}
+    ],
+    "relevant_pages": [41]
+  },
+  {
+    "question": "Intercessor Squad models have a Save characteristic of 3+. If they're in cover from a ranged attack, what happens to that number?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"save": "3+"}
+    ],
+    "relevant_pages": [44]
+  },
+  {
+    "question": "A 10-model Intercessor Squad costs 150 points. When building an army for a Strike Force battle, what's the total points limit I have to spend?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"cost": "150"}
+    ],
+    "relevant_pages": [55]
+  },
+  {
+    "question": "Necron Warriors have a Leadership of 7+. If they ever have to take a Battle-shock test, what number do they need to beat?",
+    "expected_tools": ["rag_search", "sql_query"],
+    "expected_rows": [
+      {"leadership": "7+"}
+    ],
+    "relevant_pages": [11]
+  }
+]
