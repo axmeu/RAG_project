@@ -20,7 +20,7 @@
   {
     "question": "What is the Move characteristic of a T'au Strike Team model?",
     "expected_rows": [
-      {"movement": "6"}
+      {"movement": "6\""}
     ]
   },
   {

@@ -62,8 +62,8 @@
       {"count": "292"}
     ]
   },
-  {
-    "question": "My Intercessor Squad's datasheet lists '-' for invulnerable save. Does that mean it has none, and what's the difference between an invulnerable save and a normal armour save?",
+   {
+    "question": "Does my Intercessor Squad have any invulnerable save, and what's the difference between an invulnerable save and a normal armour save?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"invulnerable_save": "-"}
@@ -71,7 +71,7 @@
     "relevant_pages": [22]
   },
   {
-    "question": "Ghazghkull Thraka has an invulnerable save of 4+. When an attack with a high Armour Penetration wounds him, does that AP reduce his invulnerable save?",
+    "question": "If an attack with a high Armour Penetration wounds Ghazghkull Thraka, does that reduce his invulnerable save?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"invulnerable_save": "4"}
@@ -79,7 +79,7 @@
     "relevant_pages": [22]
   },
   {
-    "question": "The bolt rifle has an Armour Penetration of -1. What does that number actually do to the target's saving throw?",
+    "question": "What does the bolt rifle's Armour Penetration actually do to the target's saving throw?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"ap": "-1"}
@@ -87,7 +87,7 @@
     "relevant_pages": [22]
   },
   {
-    "question": "Necron Warriors have an Objective Control of 2. What does that characteristic represent on a datasheet?",
+    "question": "What does the Objective Control characteristic on the Necron Warriors' datasheet represent, and what is their value for it?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"oc": "2"}
@@ -95,7 +95,7 @@
     "relevant_pages": [38]
   },
   {
-    "question": "A Boyz unit can include up to 19 Boyz plus a Boss Nob. If I declare a charge with this unit, what dice do I roll to see how far it can move?",
+    "question": "If I charge with a full-size Boyz unit, what dice do I roll to see how far it can move, and how many Boyz can such a unit include?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"description": "9-19 Boyz"}
@@ -103,15 +103,15 @@
     "relevant_pages": [29]
   },
   {
-    "question": "The Hive Tyrant's datasheet lists a 'Leader' ability. What does that ability let it do before the battle?",
+    "question": "Does the Hive Tyrant count as a Psyker, and what makes an attack 'Psychic' under the rules?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
-      {"ability_name": "Leader"}
+      {"keyword": "Psyker"}
     ],
-    "relevant_pages": [39]
+    "relevant_pages": [38]
   },
   {
-    "question": "The Armour of Contempt Stratagem costs 1 CP for a Space Marines army. Broadly speaking, what do Stratagems let a player spend Command Points on during a battle?",
+    "question": "What does the Armour of Contempt Stratagem cost in Command Points for a Space Marines army, and broadly speaking, what do Stratagems let a player spend Command Points on?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"cp_cost": "1"}
@@ -119,7 +119,7 @@
     "relevant_pages": [41]
   },
   {
-    "question": "Intercessor Squad models have a Save characteristic of 3+. If they're in cover from a ranged attack, what happens to that number?",
+    "question": "What Save characteristic do Intercessor Squad models have, and if they're in cover from a ranged attack, what happens to that number?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"save": "3+"}
@@ -127,7 +127,7 @@
     "relevant_pages": [44]
   },
   {
-    "question": "A 10-model Intercessor Squad costs 150 points. When building an army for a Strike Force battle, what's the total points limit I have to spend?",
+    "question": "How many points does a 10-model Intercessor Squad cost, and how does that compare to the total points limit for a Strike Force battle?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"cost": "150"}
@@ -135,7 +135,7 @@
     "relevant_pages": [55]
   },
   {
-    "question": "Necron Warriors have a Leadership of 7+. If they ever have to take a Battle-shock test, what number do they need to beat?",
+    "question": "What Leadership do Necron Warriors have, and if they ever have to take a Battle-shock test, what number do they need to beat?",
     "expected_tools": ["rag_search", "sql_query"],
     "expected_rows": [
       {"leadership": "7+"}
