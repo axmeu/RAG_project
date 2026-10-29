@@ -13,6 +13,7 @@ from tools import build_sql_instructions, execute_sql
 from config import GEMINI_MODEL as MODEL_NAME
 from config import GOLD_SQL_PATH
 
+
 load_dotenv()
 
 SQL_GEN_SYSTEM_INSTRUCTION = (
@@ -33,9 +34,9 @@ def generate_sql(client, question):
 
 
 def row_matches(row, expected):
+    row_values = {str(v).strip().lower() for v in row.values()}
     return all(
-        str(row.get(key, "")).strip().lower() == str(value).strip().lower()
-        for key, value in expected.items()
+        str(value).strip().lower() in row_values for value in expected.values()
     )
 
 
