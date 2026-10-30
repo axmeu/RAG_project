@@ -201,7 +201,8 @@ def describe_pipeline():
             "sql_max_rows": cfg.get("SQL_MAX_ROWS"),
             "sql_database": cfg.get("SQL_DB_PATH"),
             "sql_dictionary": cfg.get("SQL_DICTIONARY_PATH"),
-            "judge_llm": cfg.get("JUDGE_MODEL")
+            "judge_llm": cfg.get("JUDGE_MODEL"),
+            "judge_provider": cfg.get("JUDGE_PROVIDER"),
         },
     }
 

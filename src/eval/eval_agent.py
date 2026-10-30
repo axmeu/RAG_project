@@ -15,7 +15,6 @@ import retrieve
 from react_agent import run_agent
 from eval_sql import expected_found
 from eval_retrieval import is_relevant
-from config import GEMINI_MODEL as MODEL_NAME
 from config import GOLD_AGENT_PATH
 
 load_dotenv()
