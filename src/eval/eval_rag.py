@@ -64,7 +64,7 @@ def run_eval():
             answer, contexts = generate(client, model, retriever, by_id, question)
         trackers.append(tracker)
 
-        verdict = judge(client, question, contexts, answer)
+        verdict = judge(question, contexts, answer)
         results.append(
             {
                 "question": question,
