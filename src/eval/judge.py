@@ -15,11 +15,13 @@ def get_client():
 def judge_json(system_instruction, user_input, fallback):
     message = get_client().messages.create(
         model=JUDGE_MODEL,
-        max_tokens=1024,
+        max_tokens=4096,
         system=system_instruction,
         messages=[{"role": "user", "content": user_input}],
     )
-    text = message.content[0].text.strip()
+    text = "".join(
+        block.text for block in message.content if block.type == "text"
+    ).strip()
     start, end = text.find("{"), text.rfind("}")
     try:
         return json.loads(text[start: end + 1])
