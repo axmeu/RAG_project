@@ -4,6 +4,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 EMBEDDING_MODEL = "answerdotai/answerai-colbert-small-v1"
+JUDGE_MODEL = "claude-sonnet-5-5"
 OCR_MODEL = "lightonai/LightOnOCR-3-0.8B"  # requires flashattention on recent gpu or slow
 INDEX_NAME = "core_rules"
 

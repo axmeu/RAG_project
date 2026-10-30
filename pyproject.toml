@@ -8,6 +8,7 @@ dependencies = [
     "google-genai>=0.3",
     "python-dotenv>=1.2.4",
     "gradio>=6.30.0",
+    "anthropic>=2.3.0",
 ]
 
 [tool.uv.sources]

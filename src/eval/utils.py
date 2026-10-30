@@ -20,7 +20,7 @@ import config
 RESULTS_DIR = config.ROOT / "data" / "results"
 STRUCTURE_SOURCE = SRC_DIR / "pipeline" / "build_structure.py"
 CHUNKING_SOURCE = SRC_DIR / "pipeline" / "chunk.py"
-TRACKED_PACKAGES = ("pylate", "sentence-transformers", "torch", "google-genai")
+TRACKED_PACKAGES = ("pylate", "sentence-transformers", "torch", "google-genai", "anthropic")
 FINGERPRINTED_CONFIG_PATHS = (
     "CHUNKS_PATH",
     "SQL_DB_PATH",
@@ -201,6 +201,7 @@ def describe_pipeline():
             "sql_max_rows": cfg.get("SQL_MAX_ROWS"),
             "sql_database": cfg.get("SQL_DB_PATH"),
             "sql_dictionary": cfg.get("SQL_DICTIONARY_PATH"),
+            "judge_llm": cfg.get("JUDGE_MODEL")
         },
     }
 

@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 from utils import LatencyTracker, latency_summary, save_result
+from judge import judge_json
 
 
 SRC_DIR = Path(__file__).resolve().parent.parent
@@ -32,28 +33,20 @@ JUDGE_SYSTEM_INSTRUCTION = (
 )
 
 
-def judge(client, question, contexts, answer):
+def judge(question, contexts, answer):
     context_text = "\n\n".join(
         f"[p.{c['page_start']}-{c['page_end']}]\n{c['text']}" for c in contexts
     )
-    interaction = client.interactions.create(
-        model=MODEL_NAME,
-        system_instruction=JUDGE_SYSTEM_INSTRUCTION,
-        input=(
-            f"Question: {question}\n\n"
-            f"Context:\n{context_text}\n\n"
-            f"Answer: {answer}"
-        ),
-    )
-    try:
-        return json.loads(interaction.output_text.strip())
-    except json.JSONDecodeError:
-        return {
+    return judge_json(
+        JUDGE_SYSTEM_INSTRUCTION,
+        f"Question: {question}\n\nContext:\n{context_text}\n\nAnswer: {answer}",
+        {
             "faithfulness": None,
             "unsupported_claims": [],
             "answer_relevancy": None,
             "relevancy_note": "judge output was not valid JSON",
-        }
+        },
+    )
 
 
 def run_eval():

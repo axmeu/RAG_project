@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 from utils import LatencyTracker, latency_summary, report, save_result
+from judge import judge_json
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -36,22 +37,15 @@ JUDGE_SYSTEM_INSTRUCTION = (
 )
 
 
-def judge_answer(client, question, evidence, answer):
-    interaction = client.interactions.create(
-        model=MODEL_NAME,
-        system_instruction=JUDGE_SYSTEM_INSTRUCTION,
-        input=(
-            f"Question: {question}\n\n"
-            f"Evidence gathered by the assistant: "
-            f"{json.dumps(evidence, ensure_ascii=False)}\n\n"
-            f"Assistant's final answer: {answer}"
-        ),
+def judge_answer(question, evidence, answer):
+    return judge_json(
+        JUDGE_SYSTEM_INSTRUCTION,
+        f"Question: {question}\n\n"
+        f"Evidence gathered by the assistant: "
+        f"{json.dumps(evidence, ensure_ascii=False)}\n\n"
+        f"Assistant's final answer: {answer}",
+        {"correct": None, "reason": "judge output was not valid JSON"},
     )
-    try:
-        return json.loads(interaction.output_text.strip())
-    except json.JSONDecodeError:
-        return {"correct": None, "reason": "judge output was not valid JSON"}
-
 
 def check_routing(evidence, expected_tools):
     tools_used = {step["tool"] for step in evidence}
@@ -127,7 +121,7 @@ def run_eval(variant="baseline"):
             retrieval_hits.append(1.0 if retrieval_ok else 0.0)
             print(f"   retrieval: {'OK' if retrieval_ok else 'MISS'}")
 
-        verdict = judge_answer(client, question, evidence, answer)
+        verdict = judge_answer(question, evidence, answer)
         correct = verdict.get("correct")
         if correct is not None:
             answer_hits.append(1.0 if correct else 0.0)
