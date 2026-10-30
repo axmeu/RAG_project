@@ -1,9 +1,10 @@
 import json
 import sys
 from pathlib import Path
-
 from dotenv import load_dotenv
 from google import genai
+from utils import LatencyTracker, report, save_result
+
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -49,16 +50,34 @@ def run_eval():
     client = genai.Client()
 
     hits = 0
+    trackers = []
+    questions = []
     for item in gold:
         question = item["question"]
         expected_rows = item["expected_rows"]
 
-        sql = generate_sql(client, question)
-        result = execute_sql(sql)
-        rows = result.get("rows", [])
+        tracker = LatencyTracker()
+        with tracker.measure("total"):
+            with tracker.measure("sql_generation"):
+                sql = generate_sql(client, question)
+            with tracker.measure("sql_execution"):
+                result = execute_sql(sql)
+        trackers.append(tracker)
 
+        rows = result.get("rows", [])
         all_found = all(expected_found(rows, expected) for expected in expected_rows)
         hits += int(all_found)
+        questions.append(
+            {
+                "question": question,
+                "sql": sql,
+                "n_rows": len(rows),
+                "error": result.get("error"),
+                "expected_rows": expected_rows,
+                "correct": all_found,
+                "latency": tracker.as_dict(),
+            }
+        )
 
         print(f"{question}")
         print(f"   SQL: {sql}")
@@ -66,7 +85,16 @@ def run_eval():
         if not all_found:
             print(f"   expected: {expected_rows}")
 
+    metrics = {
+        "accuracy": hits / len(gold),
+        "correct": hits,
+        "n_questions": len(gold),
+    }
     print(f"\nAccuracy: {hits}/{len(gold)}")
+
+    report(trackers)
+    save_result("sql", metrics, questions, trackers)
+    return metrics
 
 
 if __name__ == "__main__":

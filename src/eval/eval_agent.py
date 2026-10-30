@@ -1,9 +1,10 @@
 import json
 import sys
 from pathlib import Path
-
 from dotenv import load_dotenv
 from google import genai
+from utils import LatencyTracker, report, save_result
+
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -69,23 +70,33 @@ def check_retrieval(evidence, relevant_pages):
     return any(is_relevant(chunk, relevant_pages) for chunk in chunks)
 
 
+def mean_or_none(values):
+    return sum(values) / len(values) if values else None
+
+
 def run_eval():
     gold = json.loads(GOLD_AGENT_PATH.read_text(encoding="utf-8"))
     client = genai.Client()
     rag_model, rag_retriever, rag_by_id = retrieve.load()
+    retrieve.search(rag_model, rag_retriever, rag_by_id, gold[0]["question"])
 
     routing_hits = []
     sql_hits = []
     retrieval_hits = []
     answer_hits = []
+    trackers = []
+    questions = []
 
     for item in gold:
         question = item["question"]
         expected_tools = item["expected_tools"]
 
-        answer, evidence = run_agent(
-            client, question, rag_model, rag_retriever, rag_by_id
-        )
+        tracker = LatencyTracker()
+        with tracker.measure("total"):
+            answer, evidence = run_agent(
+                client, question, rag_model, rag_retriever, rag_by_id, tracker=tracker
+            )
+        trackers.append(tracker)
 
         routing_ok, tools_used = check_routing(evidence, expected_tools)
         routing_hits.append(1.0 if routing_ok else 0.0)
@@ -94,11 +105,13 @@ def run_eval():
         print(f"   expected tools: {expected_tools}  used: {tools_used}  "
               f"routing: {'OK' if routing_ok else 'MISS'}")
 
+        sql_ok = None
         if "expected_rows" in item:
             sql_ok = check_sql(evidence, item["expected_rows"])
             sql_hits.append(1.0 if sql_ok else 0.0)
             print(f"   SQL correctness: {'OK' if sql_ok else 'MISS'}")
 
+        retrieval_ok = None
         if "relevant_pages" in item:
             retrieval_ok = check_retrieval(evidence, item["relevant_pages"])
             retrieval_hits.append(1.0 if retrieval_ok else 0.0)
@@ -109,20 +122,54 @@ def run_eval():
         if correct is not None:
             answer_hits.append(1.0 if correct else 0.0)
         print(f"   answer correctness: {correct}  ({verdict.get('reason', '')})")
+        print(f"   latency: {tracker.line()}")
+
+        questions.append(
+            {
+                "question": question,
+                "expected_tools": expected_tools,
+                "tools_used": tools_used,
+                "routing_ok": routing_ok,
+                "sql_ok": sql_ok,
+                "retrieval_ok": retrieval_ok,
+                "answer_correct": correct,
+                "judge_reason": verdict.get("reason"),
+                "answer": answer,
+                "rag_queries": [
+                    s["arguments"].get("query") for s in evidence if s["tool"] == "rag_search"
+                ],
+                "sql_queries": [
+                    s["arguments"].get("sql") for s in evidence if s["tool"] == "sql_query"
+                ],
+                "latency": tracker.as_dict(),
+            }
+        )
+
+    metrics = {
+        "routing_accuracy": mean_or_none(routing_hits),
+        "routing_n": len(routing_hits),
+        "sql_correctness": mean_or_none(sql_hits),
+        "sql_n": len(sql_hits),
+        "retrieval_recall": mean_or_none(retrieval_hits),
+        "retrieval_n": len(retrieval_hits),
+        "answer_correctness": mean_or_none(answer_hits),
+        "answer_n": len(answer_hits),
+    }
 
     print("\n--- Summary ---")
-    if routing_hits:
-        print(f"Routing accuracy: {sum(routing_hits) / len(routing_hits):.2f} "
-              f"({len(routing_hits)} questions)")
-    if sql_hits:
-        print(f"SQL correctness: {sum(sql_hits) / len(sql_hits):.2f} "
-              f"({len(sql_hits)} questions)")
-    if retrieval_hits:
-        print(f"Retrieval recall: {sum(retrieval_hits) / len(retrieval_hits):.2f} "
-              f"({len(retrieval_hits)} questions)")
-    if answer_hits:
-        print(f"Answer correctness: {sum(answer_hits) / len(answer_hits):.2f} "
-              f"({len(answer_hits)} questions)")
+    for label, key, suffix in (
+        ("Routing accuracy", "routing", "accuracy"),
+        ("SQL correctness", "sql", "correctness"),
+        ("Retrieval recall", "retrieval", "recall"),
+        ("Answer correctness", "answer", "correctness"),
+    ):
+        value = metrics[f"{key}_{suffix}"]
+        if value is not None:
+            print(f"{label}: {value:.2f} ({metrics[key + '_n']} questions)")
+
+    report(trackers)
+    save_result("agent", metrics, questions, trackers)
+    return metrics
 
 
 if __name__ == "__main__":

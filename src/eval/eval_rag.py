@@ -1,9 +1,10 @@
 import json
 import sys
 from pathlib import Path
-
 from dotenv import load_dotenv
 from google import genai
+from utils import LatencyTracker, latency_summary, save_result
+
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -61,11 +62,24 @@ def run_eval():
     model, retriever, by_id = retrieve.load()
 
     results = []
+    trackers = []
     for item in gold:
         question = item["question"]
-        answer, contexts = generate(client, model, retriever, by_id, question)
+
+        tracker = LatencyTracker()
+        with tracker.measure("total"):
+            answer, contexts = generate(client, model, retriever, by_id, question)
+        trackers.append(tracker)
+
         verdict = judge(client, question, contexts, answer)
-        results.append({"question": question, "answer": answer, **verdict})
+        results.append(
+            {
+                "question": question,
+                "answer": answer,
+                **verdict,
+                "latency": tracker.as_dict(),
+            }
+        )
 
         print(f"{question}")
         print(
@@ -76,13 +90,18 @@ def run_eval():
             print(f"   unsupported: {verdict['unsupported_claims']}")
 
     scored = [r for r in results if r.get("faithfulness") is not None]
+    metrics = {"n_questions": len(results), "n_scored": len(scored)}
     if scored:
-        avg_faithfulness = sum(r["faithfulness"] for r in scored) / len(scored)
-        avg_relevancy = sum(r["answer_relevancy"] for r in scored) / len(scored)
-        print(f"\nAverage faithfulness: {avg_faithfulness:.2f}")
-        print(f"Average answer_relevancy: {avg_relevancy:.2f}")
+        metrics["avg_faithfulness"] = sum(r["faithfulness"] for r in scored) / len(scored)
+        metrics["avg_answer_relevancy"] = sum(r["answer_relevancy"] for r in scored) / len(scored)
+        print(f"\nAverage faithfulness: {metrics['avg_faithfulness']:.2f}")
+        print(f"Average answer_relevancy: {metrics['avg_answer_relevancy']:.2f}")
 
-    return results
+    summary = latency_summary(trackers)
+    print(f"Mean generation latency: {summary['total']['mean_seconds']:.2f}s")
+
+    save_result("rag", metrics, results, trackers)
+    return metrics
 
 
 if __name__ == "__main__":

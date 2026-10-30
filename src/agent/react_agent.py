@@ -1,9 +1,10 @@
 import json
 import sys
 from pathlib import Path
-
 from dotenv import load_dotenv
 from google import genai
+import time
+from contextlib import nullcontext
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -103,29 +104,56 @@ VERIFY_SYSTEM_INSTRUCTION = (
 )
 
 
-def dispatch_tool(name, arguments, rag_model, rag_retriever, rag_by_id):
+def timed(tracker, stage):
+    return tracker.measure(stage) if tracker is not None else nullcontext()
+
+
+def stage_of(interaction):
+    names = {s.name for s in interaction.steps if s.type == "function_call"}
+    if "rag_search" in names:
+        return "reformulation"
+    if "sql_query" in names:
+        return "sql_generation"
+    return "final_answer"
+
+
+def create_interaction(client, tracker, **kwargs):
+    start = time.perf_counter()
+    interaction = client.interactions.create(**kwargs)
+    if tracker is not None:
+        tracker.add(stage_of(interaction), time.perf_counter() - start)
+    return interaction
+
+
+def dispatch_tool(name, arguments, rag_model, rag_retriever, rag_by_id, tracker=None):
     if name == "rag_search":
-        contexts = retrieve.search(
-            rag_model, rag_retriever, rag_by_id, arguments["query"], k=RAG_TOP_K
-        )
-        return [
-            {
-                "page_start": c["page_start"],
-                "page_end": c["page_end"],
-                "path_str": c["path_str"],
-                "text": c["text"],
-            }
-            for c in contexts
-        ]
+        with timed(tracker, "retrieval"):
+            contexts = retrieve.search(
+                rag_model, rag_retriever, rag_by_id, arguments["query"], k=RAG_TOP_K
+            )
+            return [
+                {
+                    "page_start": c["page_start"],
+                    "page_end": c["page_end"],
+                    "path_str": c["path_str"],
+                    "text": c["text"],
+                }
+                for c in contexts
+            ]
 
     if name == "sql_query":
-        return execute_sql(arguments["sql"])
+        with timed(tracker, "sql_execution"):
+            return execute_sql(arguments["sql"])
 
     return {"error": f"Unknown tool: {name}"}
 
 
-def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidence):
-    interaction = client.interactions.create(
+def run_tool_loop(
+    client, question, rag_model, rag_retriever, rag_by_id, evidence, tracker=None
+):
+    interaction = create_interaction(
+        client,
+        tracker,
         model=MODEL_NAME,
         system_instruction=SYSTEM_INSTRUCTION,
         input=question,
@@ -140,7 +168,7 @@ def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidenc
         results_input = []
         for call in function_calls:
             result = dispatch_tool(
-                call.name, call.arguments, rag_model, rag_retriever, rag_by_id
+                call.name, call.arguments, rag_model, rag_retriever, rag_by_id, tracker
             )
             evidence.append({"tool": call.name, "arguments": call.arguments, "result": result})
             results_input.append({
@@ -150,7 +178,9 @@ def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidenc
                 "result": json.dumps(result, ensure_ascii=False),
             })
 
-        interaction = client.interactions.create(
+        interaction = create_interaction(
+            client,
+            tracker,
             model=MODEL_NAME,
             previous_interaction_id=interaction.id,
             tools=TOOLS,
@@ -158,8 +188,10 @@ def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidenc
         )
 
     # Iterations exhausted but the model still wants to call tools:
-    # force a final, tool-free answer from whatever evidence we already have.
-    return client.interactions.create(
+    # force a final, tool-free answer from whatever evidence we already have
+    return create_interaction(
+        client,
+        tracker,
         model=MODEL_NAME,
         previous_interaction_id=interaction.id,
         input=(
@@ -170,34 +202,52 @@ def run_tool_loop(client, question, rag_model, rag_retriever, rag_by_id, evidenc
     )
 
 
-def verify_answer(client, question, evidence, answer):
-    interaction = client.interactions.create(
-        model=MODEL_NAME,
-        system_instruction=VERIFY_SYSTEM_INSTRUCTION,
-        input=(
-            f"Question: {question}\n\n"
-            f"Evidence gathered: {json.dumps(evidence, ensure_ascii=False)}\n\n"
-            f"Candidate answer: {answer}"
-        ),
-    )
+def verify_answer(client, question, evidence, answer, tracker=None):
+    with timed(tracker, "verification"):
+        interaction = client.interactions.create(
+            model=MODEL_NAME,
+            system_instruction=VERIFY_SYSTEM_INSTRUCTION,
+            input=(
+                f"Question: {question}\n\n"
+                f"Evidence gathered: {json.dumps(evidence, ensure_ascii=False)}\n\n"
+                f"Candidate answer: {answer}"
+            ),
+        )
     try:
         return json.loads(interaction.output_text.strip())
     except json.JSONDecodeError:
         return {"satisfied": True, "missing": ""}
 
 
-def run_agent(client, question, rag_model, rag_retriever, rag_by_id):
+def run_agent(
+    client,
+    question,
+    rag_model,
+    rag_retriever,
+    rag_by_id,
+    allow_retry=True,
+    tracker=None,
+):
     evidence = []
     current_question = question
     final_answer = None
 
     for round_index in range(MAX_ITERATIONS):
         interaction = run_tool_loop(
-            client, current_question, rag_model, rag_retriever, rag_by_id, evidence
+            client,
+            current_question,
+            rag_model,
+            rag_retriever,
+            rag_by_id,
+            evidence,
+            tracker,
         )
         final_answer = interaction.output_text
 
-        verdict = verify_answer(client, question, evidence, final_answer)
+        if not allow_retry:
+            return final_answer, evidence
+
+        verdict = verify_answer(client, question, evidence, final_answer, tracker)
         if verdict.get("satisfied", True):
             return final_answer, evidence
 
