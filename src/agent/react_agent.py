@@ -103,6 +103,11 @@ VERIFY_SYSTEM_INSTRUCTION = (
     'string if satisfied"}'
 )
 
+CLOSED_BOOK_SYSTEM_INSTRUCTION = (
+    "You answer questions about Warhammer 40,000 tenth edition rules and "
+    "datasheets using only your own knowledge. Be concise and precise."
+)
+
 
 def timed(tracker, stage):
     return tracker.measure(stage) if tracker is not None else nullcontext()
@@ -219,6 +224,17 @@ def verify_answer(client, question, evidence, answer, tracker=None):
         return {"satisfied": True, "missing": ""}
 
 
+def run_closed_book(client, question, tracker=None):
+    interaction = create_interaction(
+        client,
+        tracker,
+        model=MODEL_NAME,
+        system_instruction=CLOSED_BOOK_SYSTEM_INSTRUCTION,
+        input=question,
+    )
+    return interaction.output_text, []
+
+
 def run_agent(
     client,
     question,
@@ -226,8 +242,13 @@ def run_agent(
     rag_retriever,
     rag_by_id,
     allow_retry=True,
+    closed_book=False,
     tracker=None,
 ):
+    # run without additionnal knowledge
+    if closed_book:
+        return run_closed_book(client, question, tracker)
+
     evidence = []
     current_question = question
     final_answer = None

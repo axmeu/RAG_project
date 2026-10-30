@@ -3,8 +3,7 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
-from utils import LatencyTracker, report, save_result
-
+from utils import LatencyTracker, latency_summary, report, save_result
 
 SRC_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SRC_DIR))
@@ -18,8 +17,13 @@ from eval_retrieval import is_relevant
 from config import GEMINI_MODEL as MODEL_NAME
 from config import GOLD_AGENT_PATH
 
-
 load_dotenv()
+
+VARIANTS = {
+    "baseline": {},
+    "no_verify": {"allow_retry": False},
+    "closed_book": {"closed_book": True},
+}
 
 JUDGE_SYSTEM_INSTRUCTION = (
     "You are an independent evaluator judging whether an AI assistant's "
@@ -74,7 +78,8 @@ def mean_or_none(values):
     return sum(values) / len(values) if values else None
 
 
-def run_eval():
+def run_eval(variant="baseline"):
+    agent_kwargs = VARIANTS[variant]
     gold = json.loads(GOLD_AGENT_PATH.read_text(encoding="utf-8"))
     client = genai.Client()
     rag_model, rag_retriever, rag_by_id = retrieve.load()
@@ -93,9 +98,14 @@ def run_eval():
 
         tracker = LatencyTracker()
         with tracker.measure("total"):
-            answer, evidence = run_agent(
-                client, question, rag_model, rag_retriever, rag_by_id, tracker=tracker
-            )
+            answer, evidence = run_agent(client,
+                                         question,
+                                         rag_model,
+                                         rag_retriever,
+                                         rag_by_id,
+                                         **agent_kwargs,
+                                         tracker=tracker,
+                                         )
         trackers.append(tracker)
 
         routing_ok, tools_used = check_routing(evidence, expected_tools)
@@ -144,8 +154,12 @@ def run_eval():
                 "latency": tracker.as_dict(),
             }
         )
-
+    summary = latency_summary(trackers)
     metrics = {
+        "variant": variant,
+        "agent_kwargs": agent_kwargs,
+        "latency_mean_seconds": summary["total"]["mean_seconds"],
+        "latency_p95_seconds": summary["total"]["p95_seconds"],
         "routing_accuracy": mean_or_none(routing_hits),
         "routing_n": len(routing_hits),
         "sql_correctness": mean_or_none(sql_hits),
@@ -168,7 +182,8 @@ def run_eval():
             print(f"{label}: {value:.2f} ({metrics[key + '_n']} questions)")
 
     report(trackers)
-    save_result("agent", metrics, questions, trackers)
+    name = "agent" if variant == "baseline" else f"agent__{variant}"
+    save_result(name, metrics, questions, trackers)
     return metrics
 
 
