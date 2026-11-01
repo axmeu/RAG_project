@@ -109,7 +109,7 @@ About 84% of the time is spent in Gemini calls, around 4.7 sequential calls per 
 
 Every evaluation writes JSON files to `data/results/<timestamp>-<commit>[-dirty]/`: metrics, per-question outputs (queries, retrieved pages, answers, judge reasons), latency per stage, the pipeline description (OCR, chunking, indexing, retrieval, agent, judge), the git commit, package versions, and SHA-256 fingerprints of the chunks, database, gold sets and agent code (to detect any change between two runs). The `-dirty` suffix means tracked files had uncommitted changes.
 
-## Run it yourself
+## Run it
 
 The Core Rules PDF and the datasheet database are not included. Place them at `data/Core Rules.pdf` and `data/wahadb.sqlite`.
 
@@ -126,11 +126,13 @@ ANTHROPIC_API_KEY=...
 
 Only the Gemini key is needed to run the app; the Anthropic key is used by the evaluation judge.
 
-Build the pipeline (TODO: fill in the exact commands for the OCR and indexing steps):
+Build the pipeline (OCR takes longer):
 
 ```bash
+uv run python src/ocr/ocr.py
 uv run python src/pipeline/build_structure.py
 uv run python src/pipeline/chunk.py
+uv run python src/pipeline/index.py
 ```
 
 Run the app:
