@@ -81,7 +81,7 @@ Same 20 agent questions, all variants run in the same session.
 Reading the results:
 
 - **Removing the verification loop saves latency** according to our evaluation, that however can be biased by the size of the set and the complexity of the questions.
-- **Tools matter:** without them, answer correctness falls from 0.95 to 0.65. The closed-book judge has no evidence to check against, so this number is indicative.
+- **Tools matter:** without them, answer correctness falls from 0.95 to 0.7. The closed-book judge has no evidence to check against, so this number is indicative.
 - **Agent search finds one more page than the raw question** (0.87 against 0.80, one question out of 15). The advantage of reformulation is plausible but not established at this sample size.
 - **Run-to-run noise is about one question.** Earlier baseline runs scored 1.00 / 1.00 / 0.93 / 1.00 on the same set.
 
