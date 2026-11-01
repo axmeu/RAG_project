@@ -1,6 +1,7 @@
 # Warhammer 40k Core Rules Assistant
 
 A question-answering assistant for the Warhammer 40,000 Core Rules that combines late-interaction retrieval over the rulebook with **text-to-SQL** over a datasheet database, orchestrated by a **ReAct agent**. The project is evaluated end to end, with a baseline, ablations and latency measurements, and every evaluation run is saved with the full pipeline configuration. A Gradio interface (`python app.py`) also lets you query the assistant interactively.
+This project was made during my RAG coursework and is not affiliated with Games Workshop.
 
 
 ![Gradio demo](docs/demo.png)
