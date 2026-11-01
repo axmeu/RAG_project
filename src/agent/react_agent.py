@@ -87,8 +87,10 @@ SYSTEM_INSTRUCTION = (
     "stats and reference data. Decide which tool(s) a question needs based "
     "on their descriptions. A question can require both tools in sequence. "
     "Cite page numbers when you use rag_search results. Do not answer from "
-    "memory; only use what the tools return. If the tools do not contain "
-    "the answer, say so explicitly.\n\n"
+    "memory; only use what the tools return. "
+    "Cite the page number in parentheses after each rule you state, for "
+    "example (p. 15), using the page_start and page_end of the rag_search "
+    "results. If the tools do not contain the answer, say so explicitly.\n\n"
     f"{RAG_GUIDANCE}\n"
     f"{build_sql_instructions()}"
 )
@@ -187,6 +189,7 @@ def run_tool_loop(
             client,
             tracker,
             model=MODEL_NAME,
+            system_instruction=SYSTEM_INSTRUCTION,
             previous_interaction_id=interaction.id,
             tools=TOOLS,
             input=results_input,
@@ -198,6 +201,7 @@ def run_tool_loop(
         client,
         tracker,
         model=MODEL_NAME,
+        system_instruction=SYSTEM_INSTRUCTION,
         previous_interaction_id=interaction.id,
         input=(
             "You have used all available tool calls for this question. "
